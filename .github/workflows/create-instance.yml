@@ -35,3 +35,16 @@ jobs:
 
       - name: Run script
         run: php index.php
+
+      - name: Disable workflow if instance created
+        if: success()
+        run: |
+          OUTPUT=$(php index.php 2>&1)
+          echo "$OUTPUT"
+          if echo "$OUTPUT" | grep -q "ocid1.instance"; then
+            echo "Instance created! Disabling workflow..."
+            curl -X PUT \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              https://api.github.com/repos/${{ github.repository }}/actions/workflows/create-instance.yml/disable
+          fi
