@@ -19,15 +19,19 @@ jobs:
       - name: Install dependencies
         run: composer install --no-dev
 
+      - name: Create .env file
+        run: |
+          cp .env.example .env
+          sed -i "s|OCI_USER_ID=.*|OCI_USER_ID=${{ secrets.OCI_USER_OCID }}|" .env
+          sed -i "s|OCI_TENANCY_ID=.*|OCI_TENANCY_ID=${{ secrets.OCI_TENANCY_OCID }}|" .env
+          sed -i "s|OCI_KEY_FINGERPRINT=.*|OCI_KEY_FINGERPRINT=${{ secrets.OCI_FINGERPRINT }}|" .env
+          sed -i "s|OCI_REGION=.*|OCI_REGION=${{ secrets.OCI_REGION }}|" .env
+          sed -i "s|OCI_AVAILABILITY_DOMAIN=.*|OCI_AVAILABILITY_DOMAIN=${{ secrets.OCI_AVAILABILITY_DOMAIN }}|" .env
+          sed -i "s|OCI_SUBNET_ID=.*|OCI_SUBNET_ID=${{ secrets.OCI_SUBNET_ID }}|" .env
+          sed -i "s|OCI_IMAGE_ID=.*|OCI_IMAGE_ID=${{ secrets.OCI_IMAGE_ID }}|" .env
+          echo "${{ secrets.OCI_PRIVATE_KEY }}" > private_key.pem
+          sed -i "s|OCI_PRIVATE_KEY_FILENAME=.*|OCI_PRIVATE_KEY_FILENAME=private_key.pem|" .env
+          sed -i "s|OCI_PUBLIC_KEY=.*|OCI_PUBLIC_KEY=${{ secrets.OCI_SSH_PUBLIC_KEY }}|" .env
+
       - name: Run script
-        env:
-          OCI_USER_OCID: ${{ secrets.OCI_USER_OCID }}
-          OCI_TENANCY_OCID: ${{ secrets.OCI_TENANCY_OCID }}
-          OCI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
-          OCI_REGION: ${{ secrets.OCI_REGION }}
-          OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
-          OCI_AVAILABILITY_DOMAIN: ${{ secrets.OCI_AVAILABILITY_DOMAIN }}
-          OCI_SUBNET_ID: ${{ secrets.OCI_SUBNET_ID }}
-          OCI_IMAGE_ID: ${{ secrets.OCI_IMAGE_ID }}
-          OCI_SSH_PUBLIC_KEY: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
         run: php index.php
