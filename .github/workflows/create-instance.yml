@@ -32,6 +32,7 @@ jobs:
           sed -i "s|OCI_SSH_PUBLIC_KEY=.*|OCI_SSH_PUBLIC_KEY=\"${{ secrets.OCI_SSH_PUBLIC_KEY }}\"|" .env
           sed -i "s|OCI_PRIVATE_KEY_FILENAME=.*|OCI_PRIVATE_KEY_FILENAME=private_key.pem|" .env
           sed -i "s|OCI_BOOT_VOLUME_SIZE_IN_GBS=.*|OCI_BOOT_VOLUME_SIZE_IN_GBS=200|" .env
+          echo "OCI_COMPARTMENT_ID=${{ secrets.OCI_TENANCY_OCID }}" >> .env
           printf '%b' '${{ secrets.OCI_PRIVATE_KEY }}' > private_key.pem
           cat .env
 
