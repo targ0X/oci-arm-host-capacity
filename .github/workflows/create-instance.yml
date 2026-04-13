@@ -37,8 +37,11 @@ jobs:
 
       - name: Run script
         run: |
+          php index.php 2>&1 || true
           OUTPUT=$(php index.php 2>&1)
+          echo "=== OUTPUT START ==="
           echo "$OUTPUT"
+          echo "=== OUTPUT END ==="
           if echo "$OUTPUT" | grep -q "ocid1.instance"; then
             echo "INSTANCE_CREATED=true" >> $GITHUB_ENV
           fi
