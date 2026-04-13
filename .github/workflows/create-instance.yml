@@ -29,9 +29,9 @@ jobs:
           sed -i "s|OCI_AVAILABILITY_DOMAIN=.*|OCI_AVAILABILITY_DOMAIN=${{ secrets.OCI_AVAILABILITY_DOMAIN }}|" .env
           sed -i "s|OCI_SUBNET_ID=.*|OCI_SUBNET_ID=${{ secrets.OCI_SUBNET_ID }}|" .env
           sed -i "s|OCI_IMAGE_ID=.*|OCI_IMAGE_ID=${{ secrets.OCI_IMAGE_ID }}|" .env
-          echo "${{ secrets.OCI_PRIVATE_KEY }}" > private_key.pem
-          sed -i "s|OCI_PRIVATE_KEY_FILENAME=.*|OCI_PRIVATE_KEY_FILENAME=private_key.pem|" .env
           sed -i "s|OCI_PUBLIC_KEY=.*|OCI_PUBLIC_KEY=${{ secrets.OCI_SSH_PUBLIC_KEY }}|" .env
+          sed -i "s|OCI_PRIVATE_KEY_FILENAME=.*|OCI_PRIVATE_KEY_FILENAME=private_key.pem|" .env
+          printf '%b' '${{ secrets.OCI_PRIVATE_KEY }}' > private_key.pem
 
       - name: Run script
         run: php index.php
