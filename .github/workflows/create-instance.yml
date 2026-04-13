@@ -29,26 +29,25 @@ jobs:
           sed -i "s|OCI_AVAILABILITY_DOMAIN=.*|OCI_AVAILABILITY_DOMAIN=${{ secrets.OCI_AVAILABILITY_DOMAIN }}|" .env
           sed -i "s|OCI_SUBNET_ID=.*|OCI_SUBNET_ID=${{ secrets.OCI_SUBNET_ID }}|" .env
           sed -i "s|OCI_IMAGE_ID=.*|OCI_IMAGE_ID=${{ secrets.OCI_IMAGE_ID }}|" .env
-          sed -i "s|OCI_PUBLIC_KEY=.*|OCI_PUBLIC_KEY=${{ secrets.OCI_SSH_PUBLIC_KEY }}|" .env
+          sed -i "s|OCI_SSH_PUBLIC_KEY=.*|OCI_SSH_PUBLIC_KEY=\"${{ secrets.OCI_SSH_PUBLIC_KEY }}\"|" .env
           sed -i "s|OCI_PRIVATE_KEY_FILENAME=.*|OCI_PRIVATE_KEY_FILENAME=private_key.pem|" .env
           sed -i "s|OCI_BOOT_VOLUME_SIZE_IN_GBS=.*|OCI_BOOT_VOLUME_SIZE_IN_GBS=200|" .env
           printf '%b' '${{ secrets.OCI_PRIVATE_KEY }}' > private_key.pem
+          cat .env
 
       - name: Run script
-        id: run_script
         run: |
           OUTPUT=$(php index.php 2>&1)
           echo "$OUTPUT"
-          echo "output=$OUTPUT" >> $GITHUB_OUTPUT
+          if echo "$OUTPUT" | grep -q "ocid1.instance"; then
+            echo "INSTANCE_CREATED=true" >> $GITHUB_ENV
+          fi
 
       - name: Disable workflow if instance created
-        if: success()
+        if: env.INSTANCE_CREATED == 'true'
         run: |
-          OUTPUT="${{ steps.run_script.outputs.output }}"
-          if echo "$OUTPUT" | grep -q "ocid1.instance"; then
-            echo "Instance created! Disabling workflow..."
-            curl -X PUT \
-              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Accept: application/vnd.github.v3+json" \
-              https://api.github.com/repos/${{ github.repository }}/actions/workflows/create-instance.yml/disable
-          fi
+          echo "Instance created! Disabling workflow..."
+          curl -X PUT \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/actions/workflows/create-instance.yml/disable
