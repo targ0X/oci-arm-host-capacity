@@ -2,7 +2,7 @@ name: Create OCI instance
 
 on:
   schedule:
-    - cron: '*/10 * * * *'
+    - cron: '*/15 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -35,13 +35,16 @@ jobs:
           printf '%b' '${{ secrets.OCI_PRIVATE_KEY }}' > private_key.pem
 
       - name: Run script
-        run: php index.php
+        id: run_script
+        run: |
+          OUTPUT=$(php index.php 2>&1)
+          echo "$OUTPUT"
+          echo "output=$OUTPUT" >> $GITHUB_OUTPUT
 
       - name: Disable workflow if instance created
         if: success()
         run: |
-          OUTPUT=$(php index.php 2>&1)
-          echo "$OUTPUT"
+          OUTPUT="${{ steps.run_script.outputs.output }}"
           if echo "$OUTPUT" | grep -q "ocid1.instance"; then
             echo "Instance created! Disabling workflow..."
             curl -X PUT \
