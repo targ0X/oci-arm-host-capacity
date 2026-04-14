@@ -37,16 +37,19 @@ jobs:
           echo "=== Vérification clé privée ==="
           head -3 private_key.pem
           tail -3 private_key.pem
-
-      - name: Run script
-        run: |
-          OUTPUT=$(php index.php 2>&1)
-          echo "=== OUTPUT START ==="
-          echo "$OUTPUT"
-          echo "=== OUTPUT END ==="
-          if echo "$OUTPUT" | grep -q "ocid1.instance"; then
-            echo "INSTANCE_CREATED=true" >> $GITHUB_ENV
-          fi
+          
+          - name: Run script
+          run: |
+            echo "=== Test API OCI ==="
+            curl -s "https://iaas.eu-paris-1.oraclecloud.com/20160918/instances?compartmentId=${{ secrets.OCI_TENANCY_OCID }}&limit=1" || true
+            echo "=== PHP Output ==="
+            OUTPUT=$(php index.php 2>&1)
+            echo "=== OUTPUT START ==="
+            echo "$OUTPUT"
+            echo "=== OUTPUT END ==="
+            if echo "$OUTPUT" | grep -q "ocid1.instance"; then
+              echo "INSTANCE_CREATED=true" >> $GITHUB_ENV
+            fi
 
       - name: Disable workflow if instance created
         if: env.INSTANCE_CREATED == 'true'
